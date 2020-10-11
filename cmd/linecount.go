@@ -29,8 +29,8 @@ import (
 var (
 	linecountCmd = &cobra.Command{
 		Use:   "linecount",
-		Short: "file line count",
-		Long:  `file line count`,
+		Short: "Print line count of file",
+		Long:  `Print line count of file`,
 		Run: func(cmd *cobra.Command, args []string) {
 			count, err := fileLineCount(fileName)
 			if err != nil {

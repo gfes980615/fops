@@ -20,6 +20,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"hash"
@@ -31,8 +32,8 @@ import (
 var (
 	checksumCmd = &cobra.Command{
 		Use:   "checksum",
-		Short: "checksum file",
-		Long:  `provide three checksum method 1.md5 2.sha1 3.sha256`,
+		Short: "Print checksum of file",
+		Long:  `Print checksum of file`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				fmt.Println("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
@@ -46,11 +47,12 @@ var (
 			fmt.Println(result)
 		},
 	}
+	checkSumFlag string
 )
 
 func init() {
 	rootCmd.AddCommand(checksumCmd)
-	checksumCmd.Flags().StringVarP(&fileName, "file", "f", "", "file")
+	checksumCmd.Flags().StringVarP(&fileName, "file", "f", "", "enter file name")
 }
 
 func checksumFunc(method, file string) (string, error) {
@@ -66,11 +68,14 @@ func checksumFunc(method, file string) (string, error) {
 		h = sha1.New()
 	case "sha256":
 		h = sha256.New()
+	default:
+		return "", errors.New("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
+
 	}
 
 	f, _ := os.Open(file)
 	if _, err := io.Copy(h, f); err != nil {
-		fmt.Println(err)
+		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
