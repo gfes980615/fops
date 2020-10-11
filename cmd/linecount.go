@@ -17,10 +17,12 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"strings"
-
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"os"
+	"regexp"
+	"strings"
 )
 
 // linecountCmd represents the linecount command
@@ -30,10 +32,20 @@ var (
 		Short: "file line count",
 		Long:  `file line count`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(fileLineCount(fileName))
+			count, err := fileLineCount(fileName)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			fmt.Println(count)
 		},
 	}
 	fileName string
+)
+
+const (
+	File   = "file"
+	Folder = "folder"
 )
 
 func init() {
@@ -41,14 +53,70 @@ func init() {
 	linecountCmd.Flags().StringVarP(&fileName, "file", "f", "", "file")
 }
 
-func fileLineCount(file string) int {
-	return len(strings.Split(readFile(file), "\n"))
+func fileLineCount(file string) (int, error) {
+	text, err := readFile(file)
+	if err != nil {
+		return -1, err
+	}
+	return len(strings.Split(text, "\n")), nil
 }
 
-func readFile(file string) string {
-	b, err := ioutil.ReadFile(file)
-	if err != nil {
-		fmt.Print(err)
+func readFile(file string) (string, error) {
+	if err := checkFileExist(file); err != nil {
+		return "", err
 	}
-	return string(b)
+
+	b, _ := ioutil.ReadFile(file)
+	if checkFileIsBinary(b) {
+		return "", fmt.Errorf("error: Cannot do linecount for binary file '%s'", file)
+	}
+	return string(b), nil
+}
+
+func checkFileIsBinary(b []byte) bool {
+	detectedMIME := mimetype.Detect(b)
+	isBinary := true
+	for mime := detectedMIME; mime != nil; mime = mime.Parent() {
+		if mime.Is("text/plain") {
+			isBinary = false
+		}
+	}
+	return isBinary
+}
+
+func checkFileExist(file string) error {
+	f := checkFileOrFolder(file)
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		switch f {
+		case File:
+			if strings.HasSuffix(err.Error(), "The system cannot find the file specified.") {
+				err = fmt.Errorf("error: No such file '%s'", file)
+			}
+			return err
+		case Folder:
+			if strings.HasSuffix(err.Error(), "The system cannot find the file specified.") {
+				err = fmt.Errorf("error: Expected file got directory '%s'", file)
+			}
+			return err
+		}
+	}
+	return nil
+}
+
+func checkFileOrFolder(f string) string {
+	sub := strings.Split(f, "/")
+	if len(sub) == 1 {
+		return File
+	}
+
+	match, err := regexp.MatchString("(.*?)\\.(.*?)", sub[len(sub)-1])
+	if err != nil {
+		fmt.Println(err)
+	}
+	if match {
+		return File
+	} else {
+		return Folder
+	}
+	return ""
 }

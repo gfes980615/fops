@@ -22,6 +22,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/spf13/cobra"
+	"hash"
 	"io"
 	"os"
 )
@@ -33,10 +34,18 @@ var (
 		Short: "checksum file",
 		Long:  `provide three checksum method 1.md5 2.sha1 3.sha256`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(checksumFunc(args[0], fileName))
+			if len(args) == 0 {
+				fmt.Println("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
+				return
+			}
+			result, err := checksumFunc(args[0], fileName)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			fmt.Println(result)
 		},
 	}
-	check string
 )
 
 func init() {
@@ -44,30 +53,24 @@ func init() {
 	checksumCmd.Flags().StringVarP(&fileName, "file", "f", "", "file")
 }
 
-func checksumFunc(method, file string) string {
-	f, err := os.Open(file)
-	if err != nil {
-		fmt.Println(err)
+func checksumFunc(method, file string) (string, error) {
+	if err := checkFileExist(file); err != nil {
+		return "", err
 	}
+
+	var h hash.Hash
 	switch method {
 	case "md5":
-		h := md5.New()
-		if _, err := io.Copy(h, f); err != nil {
-			fmt.Println(err)
-		}
-		return hex.EncodeToString(h.Sum(nil))
+		h = md5.New()
 	case "sha1":
-		h := sha1.New()
-		if _, err := io.Copy(h, f); err != nil {
-			fmt.Println(err)
-		}
-		return hex.EncodeToString(h.Sum(nil))
+		h = sha1.New()
 	case "sha256":
-		h := sha256.New()
-		if _, err := io.Copy(h, f); err != nil {
-			fmt.Println(err)
-		}
-		return hex.EncodeToString(h.Sum(nil))
+		h = sha256.New()
 	}
-	return ""
+
+	f, _ := os.Open(file)
+	if _, err := io.Copy(h, f); err != nil {
+		fmt.Println(err)
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
