@@ -20,34 +20,12 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
+	"github.com/gfes980615/fops/helper"
 	"github.com/spf13/cobra"
 	"hash"
 	"io"
 	"os"
-)
-
-// checksumCmd represents the checksum command
-var (
-	checksumCmd = &cobra.Command{
-		Use:   "checksum",
-		Short: "Print checksum of file",
-		Long:  `Print checksum of file`,
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				fmt.Println("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
-				return
-			}
-			result, err := checksumFunc(args[0], fileName)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			fmt.Println(result)
-		},
-	}
-	checkSumFlag string
 )
 
 func init() {
@@ -55,8 +33,30 @@ func init() {
 	checksumCmd.Flags().StringVarP(&fileName, "file", "f", "", "enter file name")
 }
 
+// checksumCmd represents the checksum command
+var (
+	checksumCmd = &cobra.Command{
+		Use:   "checksum",
+		Short: "Print checksum of file",
+		Long:  `Print checksum of file`,
+		RunE:  runChecksumCommand,
+	}
+)
+
+func runChecksumCommand(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
+	}
+	result, err := checksumFunc(args[0], fileName)
+	if err != nil {
+		return err
+	}
+	fmt.Println(result)
+	return nil
+}
+
 func checksumFunc(method, file string) (string, error) {
-	if err := checkFileExist(file); err != nil {
+	if err := helper.CheckFileExist(file); err != nil {
 		return "", err
 	}
 
@@ -69,7 +69,7 @@ func checksumFunc(method, file string) (string, error) {
 	case "sha256":
 		h = sha256.New()
 	default:
-		return "", errors.New("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
+		return "", fmt.Errorf("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
 
 	}
 

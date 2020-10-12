@@ -21,14 +21,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	version_tag = "v0.0.1"
+)
+
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show the version info",
 	Long:  `Show the version info`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("fops v0.0.1")
-	},
+	Run:   runVersionCommand,
+}
+
+func runVersionCommand(cmd *cobra.Command, args []string) {
+	fmt.Printf("fops %s\n", version_tag)
 }
 
 func init() {
