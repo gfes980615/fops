@@ -1,0 +1,13 @@
+language: go
+
+go:
+  - 1.15.x
+  - master
+
+env:
+  - GO111MODULE=on
+
+script:
+  - go test -v ./...
+  - go build
+  - fops help
