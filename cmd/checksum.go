@@ -37,6 +37,12 @@ func init() {
 	checksumCmd.Flags().BoolVar(&sha256FlagBool, "sha256", false, "sha256 checksum")
 }
 
+const (
+	MD5    = "md5"
+	SHA1   = "sha1"
+	SHA256 = "sha256"
+)
+
 // checksumCmd represents the checksum command
 var (
 	checksumCmd = &cobra.Command{
@@ -52,7 +58,18 @@ var (
 )
 
 func runChecksumCommand(cmd *cobra.Command, args []string) error {
-	result, err := checksumFunc(fileName)
+	var method string
+	if md5FlagBool {
+		method = MD5
+	} else if sha1FlagBool {
+		method = SHA1
+	} else if sha256FlagBool {
+		method = SHA256
+	} else {
+		return fmt.Errorf("Please enter one checksum flag: '--md5', '--sha1', '--sha256'")
+	}
+
+	result, err := checksumFunc(method, fileName)
 	if err != nil {
 		return err
 	}
@@ -60,20 +77,20 @@ func runChecksumCommand(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func checksumFunc(file string) (string, error) {
+func checksumFunc(method, file string) (string, error) {
 	if err := helper.CheckFileExist(file); err != nil {
 		return "", err
 	}
 
 	var h hash.Hash
-
-	if md5FlagBool {
+	switch method {
+	case MD5:
 		h = md5.New()
-	} else if sha1FlagBool {
+	case SHA1:
 		h = sha1.New()
-	} else if sha256FlagBool {
+	case SHA256:
 		h = sha256.New()
-	} else {
+	default:
 		return "", fmt.Errorf("Please enter one checksum flag: '--md5', '--sha1', '--sha256'")
 	}
 
