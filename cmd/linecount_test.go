@@ -17,7 +17,7 @@ func Test_fileLineCount(t *testing.T) {
 			args: args{
 				file: "test/for_test.txt",
 			},
-			want:    7,
+			want:    6,
 			wantErr: false,
 		},
 	}
