@@ -26,15 +26,17 @@ import (
 func init() {
 	rootCmd.AddCommand(linecountCmd)
 	linecountCmd.Flags().StringVarP(&fileName, "file", "f", "", "file")
+	linecountCmd.MarkFlagRequired("file")
 }
 
 // linecountCmd represents the linecount command
 var (
 	linecountCmd = &cobra.Command{
-		Use:   "linecount",
-		Short: "Print line count of file",
-		Long:  `Print line count of file`,
-		RunE:  runLineCountCommand,
+		Use:     "linecount",
+		Short:   "Print line count of file",
+		Long:    `Print line count of file`,
+		RunE:    runLineCountCommand,
+		Example: "  fops linecount -f [filename] ",
 	}
 	fileName string
 )

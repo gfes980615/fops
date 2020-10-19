@@ -31,23 +31,28 @@ import (
 func init() {
 	rootCmd.AddCommand(checksumCmd)
 	checksumCmd.Flags().StringVarP(&fileName, "file", "f", "", "enter file name")
+	checksumCmd.MarkFlagRequired("file")
+	checksumCmd.Flags().BoolVar(&md5FlagBool, "md5", false, "md5 checksum")
+	checksumCmd.Flags().BoolVar(&sha1FlagBool, "sha1", false, "sha1 checksum")
+	checksumCmd.Flags().BoolVar(&sha256FlagBool, "sha256", false, "sha256 checksum")
 }
 
 // checksumCmd represents the checksum command
 var (
 	checksumCmd = &cobra.Command{
-		Use:   "checksum",
-		Short: "Print checksum of file",
-		Long:  `Print checksum of file`,
-		RunE:  runChecksumCommand,
+		Use:     "checksum",
+		Short:   "Print checksum of file",
+		Long:    `Print checksum of file`,
+		RunE:    runChecksumCommand,
+		Example: "  fops checksum -f [filename] [checksum flag]",
 	}
+	md5FlagBool    bool
+	sha1FlagBool   bool
+	sha256FlagBool bool
 )
 
 func runChecksumCommand(cmd *cobra.Command, args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
-	}
-	result, err := checksumFunc(args[0], fileName)
+	result, err := checksumFunc(fileName)
 	if err != nil {
 		return err
 	}
@@ -55,22 +60,21 @@ func runChecksumCommand(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func checksumFunc(method, file string) (string, error) {
+func checksumFunc(file string) (string, error) {
 	if err := helper.CheckFileExist(file); err != nil {
 		return "", err
 	}
 
 	var h hash.Hash
-	switch method {
-	case "md5":
-		h = md5.New()
-	case "sha1":
-		h = sha1.New()
-	case "sha256":
-		h = sha256.New()
-	default:
-		return "", fmt.Errorf("Please enter one checksum method: 'md5', 'sha1', 'sha256'")
 
+	if md5FlagBool {
+		h = md5.New()
+	} else if sha1FlagBool {
+		h = sha1.New()
+	} else if sha256FlagBool {
+		h = sha256.New()
+	} else {
+		return "", fmt.Errorf("Please enter one checksum flag: '--md5', '--sha1', '--sha256'")
 	}
 
 	f, _ := os.Open(file)
