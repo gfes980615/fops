@@ -1,0 +1,5 @@
+---
+Database: ['lv']
+Address: '10.200.252.216:3306'
+Username: rd_report
+Password: 'bkreport@DEV'

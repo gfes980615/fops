@@ -1,0 +1,2 @@
+DELETE FROM `user` WHERE login = 'fredfred';
+INSERT INTO `user` (`login`, `name`, `passwd`, `salt`, `status`, `locked`, `last_login_time`, `failed_attempt_count`, `note`, `limit_amount`, `last_change_passwd_time`) VALUES('fredfred','fredfred','1fb458785e369d803c056bdf41b6157bfa29336ad41d23c2f548410bb97906f0eb9bf6818116d0b562768c7ba5bfb5f68357b9c88c688ba07dd16535af9fa79c','03ded18b-b54f-4683-a0b5-8b4c6218c216','1','0','2020-08-17 07:06:23','0','','10000000000.00','2019-06-21 09:53:54');
