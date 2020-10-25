@@ -1,5 +1,5 @@
 ---
-Database: ['lv']
-Address: '10.200.252.216:3306'
-Username: rd_report
-Password: 'bkreport@DEV'
+Database: ['test']
+Address: '127.0.0.1:3306'
+Username: root
+Password: '123456'

@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/gfes980615/fops/glob"
 	"github.com/spf13/cobra"
@@ -29,7 +30,7 @@ import (
 func init() {
 	rootCmd.AddCommand(sqlCmd)
 	sqlCmd.Flags().StringVarP(&fileName, "file", "f", "", "enter sql file")
-	sqlCmd.MarkFlagRequired("file")
+	sqlCmd.Flags().StringVar(&folder, "folder", "", "enter folder")
 }
 
 // checksumCmd represents the checksum command
@@ -40,10 +41,30 @@ var (
 		Long:  `Execute your sql`,
 		RunE:  runSqlCommand,
 	}
+	folder string
 )
 
 func runSqlCommand(cmd *cobra.Command, args []string) error {
-	failedDB, err := dbExec(fileName)
+	if len(folder) > 0 {
+		folders, err := ioutil.ReadDir(folder)
+		if err != nil {
+			return err
+		}
+		for _, f := range folders {
+			err = exec(folder + "/" + f.Name())
+		}
+		return err
+	}
+
+	if len(fileName) > 0 {
+		return exec(fileName)
+	}
+
+	return errors.New("Please enter exec file or folder")
+}
+
+func exec(file string) error {
+	failedDB, err := dbExec(file)
 	if err != nil {
 		return err
 	}
@@ -54,7 +75,7 @@ func runSqlCommand(cmd *cobra.Command, args []string) error {
 	for db, failedErr := range failedDB {
 		fmt.Printf("DB: %s, error: %v", db, failedErr)
 	}
-	return nil
+	return errors.New("some Error")
 }
 
 func dbExec(file string) (map[string]error, error) {
