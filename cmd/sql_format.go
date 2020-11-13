@@ -71,13 +71,8 @@ var (
 )
 
 func runSqlFormatCommand(cmd *cobra.Command, args []string) error {
-	folders, err := ioutil.ReadDir(folder)
-	if err != nil {
-		return err
-	}
-
-	filePath := helper.GetAllFileInFolder(folder, folders)
-	helper.CreateNewFolder(folderMean_New, folder, folders)
+	filePath := helper.GetAllFileInFolder(folder)
+	helper.CreateNewFolder(folderMean_New, folder)
 	initFolderMap(folderMean_New, filePath)
 	for _, file := range filePath {
 		createFormatSQL(file)

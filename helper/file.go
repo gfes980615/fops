@@ -30,38 +30,34 @@ func WriteToFile(value, fileName string) error {
 	return nil
 }
 
-func GetAllFileInFolder(rootFolder string, folders []os.FileInfo) []string {
+func GetAllFileInFolder(rootFolder string) []string {
 	paths := []string{}
-	fn := func(rootFolder string, folders []os.FileInfo) {}
-	fn = func(rootFolder string, folders []os.FileInfo) {
-		for _, folder := range folders {
-			file := rootFolder + "/" + folder.Name()
-			if folder.IsDir() {
-				subFolder, _ := ioutil.ReadDir(file)
-				fn(file, subFolder)
-			} else {
-				paths = append(paths, file)
-			}
+	folders, err := ioutil.ReadDir(rootFolder)
+	if err != nil {
+		return nil
+	}
+	for _, f := range folders {
+		subFolder := rootFolder + "/" + f.Name()
+		if f.IsDir() {
+			paths = append(paths, GetAllFileInFolder(subFolder)...)
+		} else {
+			paths = append(paths, subFolder)
 		}
 	}
-	fn(rootFolder, folders)
-
 	return paths
 }
 
-func CreateNewFolder(mean, rootFolder string, folders []os.FileInfo) {
-	newFolderRoot := mean + rootFolder
-	os.MkdirAll(newFolderRoot, os.ModePerm)
-	fn := func(rootFolder string, folders []os.FileInfo) {}
-	fn = func(rootFolder string, folders []os.FileInfo) {
-		for _, folder := range folders {
-			file := newFolderRoot + "/" + folder.Name()
-			if folder.IsDir() {
-				subFolder, _ := ioutil.ReadDir(file)
-				os.MkdirAll(file, os.ModePerm)
-				fn(file, subFolder)
-			}
+func CreateNewFolder(mean, rootFolder string) error {
+	folders, err := ioutil.ReadDir(rootFolder)
+	if err != nil {
+		return err
+	}
+	for _, f := range folders {
+		subFolder := rootFolder + "/" + f.Name()
+		if f.IsDir() {
+			os.MkdirAll(mean+subFolder, os.ModePerm)
+			CreateNewFolder(mean, subFolder)
 		}
 	}
-	fn(rootFolder, folders)
+	return nil
 }

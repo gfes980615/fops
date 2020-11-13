@@ -20,7 +20,6 @@ import (
 	"github.com/gfes980615/fops/helper"
 	"github.com/spf13/cobra"
 	_ "gorm.io/driver/mysql"
-	"io/ioutil"
 	"regexp"
 )
 
@@ -41,12 +40,7 @@ var (
 )
 
 func runParameterCommand(cmd *cobra.Command, args []string) error {
-	folders, err := ioutil.ReadDir(folder)
-	if err != nil {
-		return err
-	}
-
-	filePath := helper.GetAllFileInFolder(folder, folders)
+	filePath := helper.GetAllFileInFolder(folder)
 	parameterFileContent := ""
 	parameterMap := make(map[string]bool)
 	for _, file := range filePath {

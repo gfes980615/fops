@@ -20,7 +20,6 @@ import (
 	"github.com/gfes980615/fops/helper"
 	"github.com/spf13/cobra"
 	_ "gorm.io/driver/mysql"
-	"io/ioutil"
 	"strings"
 )
 
@@ -44,14 +43,10 @@ var (
 )
 
 func runReplaceCommand(cmd *cobra.Command, args []string) error {
-	folders, err := ioutil.ReadDir(folder)
-	if err != nil {
-		return err
-	}
-	pMap := getParameter()
-	filePath := helper.GetAllFileInFolder(folder, folders)
-	helper.CreateNewFolder(folderMean_test, folder, folders)
+	filePath := helper.GetAllFileInFolder(folder)
+	helper.CreateNewFolder(folderMean_test, folder)
 	initFolderMap(folderMean_test, filePath)
+	pMap := getParameter()
 	for _, file := range filePath {
 		sql := helper.ReadFileToString(file)
 		for key, value := range pMap {
