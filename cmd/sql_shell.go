@@ -46,14 +46,7 @@ var (
 
 func runSqlCommand(cmd *cobra.Command, args []string) error {
 	if len(folder) > 0 {
-		folders, err := ioutil.ReadDir(folder)
-		if err != nil {
-			return err
-		}
-		for _, f := range folders {
-			err = exec(folder + "/" + f.Name())
-		}
-		return err
+		return folderExec(folder)
 	}
 
 	if len(fileName) > 0 {
@@ -63,19 +56,37 @@ func runSqlCommand(cmd *cobra.Command, args []string) error {
 	return errors.New("Please enter exec file or folder")
 }
 
+func folderExec(folder string) error {
+	folders, err := ioutil.ReadDir(folder)
+	if err != nil {
+		return err
+	}
+	for _, f := range folders {
+		subFolder := folder + "/" + f.Name()
+		if f.IsDir() {
+			folderExec(subFolder)
+		} else {
+			err = exec(subFolder)
+		}
+	}
+	return err
+}
+
 func exec(file string) error {
 	failedDB, err := dbExec(file)
 	if err != nil {
 		return err
 	}
 	if len(failedDB) == 0 {
-		fmt.Println("all success")
+		fmt.Println("---------------------------")
+		fmt.Printf("file: %s all success\n", file)
 		return nil
 	}
 	for db, failedErr := range failedDB {
-		fmt.Printf("DB: %s, error: %v", db, failedErr)
+		fmt.Println("---------------------------")
+		fmt.Printf("DB: %s\nFile: %s\nError: %v\n", db, file, failedErr)
 	}
-	return errors.New("some Error")
+	return nil
 }
 
 func dbExec(file string) (map[string]error, error) {
