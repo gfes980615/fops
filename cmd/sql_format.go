@@ -67,6 +67,7 @@ var (
 		"all":         true,
 		"in":          true,
 		"max":         true,
+		"limit":       true,
 	}
 )
 

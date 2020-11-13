@@ -45,7 +45,7 @@ func runParameterCommand(cmd *cobra.Command, args []string) error {
 	parameterMap := make(map[string]bool)
 	for _, file := range filePath {
 		sql := helper.ReadFileToString(file)
-		r, _ := regexp.Compile("\\{([a-z_]+)}")
+		r, _ := regexp.Compile("\\{([a-z_0-9A-Z]+)}")
 		matches := r.FindAllStringSubmatch(sql, -1)
 		for _, match := range matches {
 			if !parameterMap[match[0]] {
